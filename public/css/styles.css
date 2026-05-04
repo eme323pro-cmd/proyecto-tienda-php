@@ -1,0 +1,656 @@
+/* Configuración General */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navegación */
+.menu-superior {
+    background-color: #343a40;
+    padding: 1rem;
+}
+
+.menu-superior a {
+    color: white;
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+}
+
+.menu-superior a:hover {
+    color: #ffc107;
+}
+
+/* Contenedores */
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #212529;
+}
+
+/* Rejilla de Productos */
+.contenedor-productos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Tarjeta de Producto */
+.tarjeta-producto {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    width: 280px;
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.tarjeta-producto:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.precio {
+    display: block;
+    font-size: 1.4em;
+    color: #28a745;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+/* Botones */
+.btn-comprar {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-comprar:hover {
+    background-color: #0056b3;
+}
+
+/* Pie de página */
+.pie-pagina {
+    text-align: center;
+    padding: 40px 0;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+/* Estilos para el Formulario de Registro/Login */
+.formulario-auth {
+    max-width: 400px;
+    margin: 40px auto;
+    text-align: left;
+}
+
+.campo-grupo {
+    margin-bottom: 15px;
+}
+
+.campo-grupo label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #495057;
+}
+
+.campo-grupo input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box; 
+}
+
+.lista-errores {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    list-style: none;
+}
+
+.btn-google {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #4285F4;
+    text-decoration: none;
+    font-weight: bold;
+    border: 1px solid #4285F4;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.btn-google:hover {
+    background-color: #f1f3f4;
+}
+
+.texto-iniciarSesion{
+    text-align: center; 
+    margin-top: 15px;
+}
+
+/* Mensaje de bienvenida/éxito */
+.alerta-exito {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.alerta-exito strong {
+    text-transform: capitalize;
+}
+
+.banner-bienvenida {
+    background-color: #28a745;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    margin-top: 0;
+}
+
+.zona-admin {
+    margin-bottom: 20px;
+}
+
+.btn-admin {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Contenedor del Formulario */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; 
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+.btn-cancel {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #666;
+    text-decoration: none;
+}
+
+/* Estilo para el Cerrar Sesión en el Menú */
+.menu-logout {
+    color: #ff4d4d !important; 
+    font-weight: bold;
+}
+
+/* Barra de navegación principal */
+.navbar {
+    background-color: #343a40; 
+    padding: 15px 0;
+    width: 100%;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 0 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.nav-links a:hover {
+    color: #adb5bd;
+}
+
+/* Estilo específico para Cerrar Sesión */
+.menu-logout {
+    background-color: #dc3545;
+    color: white !important;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.menu-logout:hover {
+    background-color: #a71d2a;
+}
+
+/* Contenedor General */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.titulo-pagina {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    color: #333;
+}
+
+/* Zona Admin arriba */
+.zona-admin {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.btn-admin-principal {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Grid de Productos */
+.contenedor-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, min-minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.tarjeta-producto {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.precio {
+    display: block;
+    font-size: 1.5rem;
+    color: #28a745;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+/* Botones de acción */
+.acciones {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.btn-comprar {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+/* Grupo de botones Admin */
+.admin-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-editar, .btn-eliminar {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.btn-editar {
+    background-color: #ffc107; 
+    color: #212529;
+}
+
+.btn-eliminar {
+    background-color: #dc3545; 
+}
+
+.btn-editar:hover { 
+    background-color: #e0a800; 
+}
+.btn-eliminar:hover { 
+    background-color: #c82333; 
+}
+
+.btn-comprar{
+    text-decoration: none; 
+    display: block; 
+    text-align: center;
+}
+
+/* Botón de añadir al carrito en la tarjeta */
+.btn-carrito-add {
+    display: block;
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.btn-carrito-add:hover {
+    background-color: #0056b3;
+}
+
+/* Enlace del carrito en el NAV */
+.nav-carrito {
+    color: #ffc107 !important; 
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 15px;
+}
+
+.nav-carrito:hover {
+    color: #e0a800 !important;
+}
+
+/* Estilos para el Carrito */
+.tabla-carrito {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+}
+
+.tabla-carrito th, .tabla-carrito td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.tabla-carrito th {
+    background-color: #f8f9fa;
+}
+
+.carrito-acciones {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+.btn-volver, .btn-seguir {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.btn-pagar {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-quitar {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.btn-quitar:hover {
+    background-color: #cc0000;
+}
+
+.col-accion {
+    text-align: center;
+    width: 80px;
+}
+
+/* Página de éxito tras comprar */
+.container-exito {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    text-align: center;
+}
+
+.mensaje-exito h1 {
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.mensaje-exito p {
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+/* Ajuste para el botón de pagar en el carrito (para que no salga subrayado) */
+.btn-pagar {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none; 
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.btn-pagar:hover {
+    background-color: #218838;
+}
+
+.container-checkout { 
+    max-width: 500px; 
+    margin: 40px auto; 
+    padding: 20px; 
+}
+
+.form-pago { 
+    display: flex; 
+    flex-direction: column;
+    gap: 15px; 
+
+}
+
+.form-pago input { 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+}
+
+.pago-detalles { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.pago-detalles input { 
+    flex: 1; 
+}
+
+.btn-pagar-final { 
+    background-color: #28a745; 
+    color: white; 
+    padding: 15px; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: bold;
+}
+
+.alerta-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 20px;
+}
+
+.alerta-error ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.alerta-error li {
+    list-style: disc;
+}
+
+.input-contacto-texto {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit; 
+    resize: vertical;    
+}
+
+.login-social {
+    margin-top: 20px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.btn-google {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Contenedor de la derecha del header */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px; 
+}
+
+/* Estilo para el texto "Hola, Emeterio" */
+.user-name {
+    color: #ffffff;          
+    font-weight: 600;       
+    font-size: 0.95rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); 
+}
+
+/* Estilo para el botón de Cerrar Sesión */
+.btn-logout {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-logout:hover {
+    background-color: #c82333;
+}
