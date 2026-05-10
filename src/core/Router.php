@@ -24,7 +24,7 @@ class Router {
 
         foreach (self::$routes as $route) {
             if ($route['method'] === $method && $route['action'] === $uri) {
-                // Aquí estaba el error, debe ser así:
+                
                 return call_user_func($route['callback']);
             }
         }

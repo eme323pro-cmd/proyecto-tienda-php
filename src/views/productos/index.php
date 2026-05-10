@@ -5,6 +5,8 @@
     <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
         <div class="zona-admin">
             <a href="<?= BASE_URL ?>productos/crear" class="btn-admin-principal">+ Añadir Nuevo Producto</a>
+            <a href="<?= BASE_URL ?>productos/crearCategoria" class="btn-admin-principal">+ Nueva Categoría</a>
+            <a href="<?= BASE_URL ?>categorias/confirmarBorrado" class="btn-quitar" style="background-color: #e74c3c;">- Eliminar Categoría</a>
         </div>
     <?php endif; ?>
 
@@ -14,6 +16,11 @@
             <div class="tarjeta-producto">
                 <div class="producto-info">
                     <h2><?= htmlspecialchars($p['nombre']) ?></h2>
+
+                    <span class="badge-etiqueta"
+                    style="display:inline-block; background:#3498db; color:white; padding:3px 10px; border-radius:5px; font-size:12px; font-weight:bold;"
+                        >Categoría: <?= htmlspecialchars($p['nombre_categoria'] ?? 'Sin categoría') ?></span>
+
                     <p class="descripcion"><?= htmlspecialchars($p['descripcion']) ?></p>
                     <span class="precio"><?= number_format($p['precio'], 2, ',', '.') ?> €</span>
                 </div>

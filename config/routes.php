@@ -110,11 +110,34 @@ Router::add('POST', '/contacto', function() {
 /* Autenticación Externa (Google Auth)
  * Permite a los usuarios iniciar sesión con Google*/
 Router::add('GET', '/usuarios/login_google', function() {
-    (new \Controllers\UsuarioController())->loginGoogle();
+    (new UsuarioController())->loginGoogle();
 });
 
 Router::add('GET', '/usuarios/google_callback', function() {
-    (new \Controllers\UsuarioController())->googleCallback();
+    (new UsuarioController())->googleCallback();
+});
+
+/*Crear nuevas categorias*/
+Router::add('GET', '/productos/crearCategoria', function() {
+    (new ProductoController())->crearCategoria();
+});
+
+Router::add('POST', '/productos/guardarCategoria', function() {
+    (new ProductoController())->guardarCategoria();
+});
+
+//Que se puedan borrar categorías
+Router::add('GET', '/categorias/eliminar', function() {
+    (new ProductoController())->eliminarCategoria();
+});
+
+//Rutas para borrar categorias
+Router::add('GET', '/categorias/confirmarBorrado', function() {
+    (new ProductoController())->confirmarBorrado();
+});
+
+Router::add('POST', '/categorias/eliminar', function() {
+    (new ProductoController())->eliminarCategoria();
 });
 
 /* Ejecución del Router

@@ -19,6 +19,9 @@ if (isset($data['p'])) $p = $data['p'];
         <label>Precio:</label>
         <input type="number" step="0.01" name="precio" class="form-control" value="<?= $p['precio'] ?>" required>
 
+        <label>Stock:</label>
+        <input type="number" name="stock" class="form-control" required min="0">
+
         <button type="submit" class="btn-submit">Actualizar Producto</button>
         <a href="<?= BASE_URL ?>">Volver atrás</a>
     </form>

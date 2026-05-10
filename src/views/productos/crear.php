@@ -1,5 +1,3 @@
-
-<!-- Para añadir productos siendo admin -->
 <div class="form-container">
     <h1>Añadir Nuevo Producto</h1>
 
@@ -21,6 +19,25 @@
         <div class="form-group">
             <label for="precio">Precio (€)</label>
             <input type="number" step="0.01" name="precio" id="precio" class="form-control" placeholder="0.00" required>
+        </div>
+
+        <div class="form-group">
+            <label for="stock">Stock inicial:</label>
+            <input type="number" name="stock" id="stock" class="form-control" value="0" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="categoria_id">Categoría</label>
+            <select name="categoria_id" id="categoria_id" class="form-control" required>
+                <option value="">Selecciona una categoría</option>
+                <?php if (isset($lista_categorias)): ?>
+                    <?php foreach ($lista_categorias as $categoria): ?>
+                        <option value="<?= $categoria['id'] ?>">
+                            <?= htmlspecialchars($categoria['nombre']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </select>
         </div>
 
         <button type="submit" class="btn-submit">Guardar Producto</button>

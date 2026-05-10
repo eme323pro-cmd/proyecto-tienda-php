@@ -7,6 +7,8 @@ namespace Controllers;
 
 use Core\Pages;
 use Repositories\ProductoRepositorio;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class ProductoController {
     private Pages $pages;
@@ -42,14 +44,19 @@ class ProductoController {
             exit;
         }
 
+        // --- NUEVO: Pedimos las categorías para que salgan en el desplegable ---
+        $lista_categorias = $this->repository->obtenerCategorias(); 
+
         // Si el formulario ha sido enviado (POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre = $_POST['nombre'];
             $descripcion = $_POST['descripcion'];
             $precio = $_POST['precio'];
+            $categoria_id = $_POST['categoria_id'];
+            $stock = $_POST['stock'];
 
-            // Guardamos en la base de datos
-            $exito = $this->repository->guardar($nombre, $descripcion, $precio);
+            // Guardamos en la base de datos (Añadimos $categoria_id al final)
+            $exito = $this->repository->guardar($nombre, $descripcion, $precio, $categoria_id, $stock);
 
             if ($exito) {
                 header("Location: " . BASE_URL);
@@ -59,8 +66,11 @@ class ProductoController {
             }
         }
 
-        // Cargamos la vista del formulario
-        $this->pages->render('productos/crear', ['error' => $error ?? null]);
+        // --- IMPORTANTE: Enviamos $lista_categorias a la vista ---
+        $this->pages->render('productos/crear', [
+            'lista_categorias' => $lista_categorias, 
+            'error' => $error ?? null
+        ]);
     }
     public function editar() {
         // Miramos qué ID queremos editar
@@ -71,8 +81,9 @@ class ProductoController {
             $nombre = $_POST['nombre'];
             $descripcion = $_POST['descripcion'];
             $precio = $_POST['precio'];
+            $stock = $_POST['stock'];
 
-            $this->repository->actualizar($id, $nombre, $descripcion, $precio);
+            $this->repository->actualizar($id, $nombre, $descripcion, $precio, $stock);
             header("Location: " . BASE_URL);
             exit;
         }
@@ -102,13 +113,18 @@ class ProductoController {
 
         $id = $_GET['id'] ?? null;
         if ($id) {
-            if (!isset($_SESSION['carrito'])) {
-                $_SESSION['carrito'] = [];
+            // Miramos si hay stock antes de añadir
+            $p = $this->repository->buscarPorId($id);
+            
+            if ($p && $p['stock'] > 0) {
+                if (!isset($_SESSION['carrito'])) {
+                    $_SESSION['carrito'] = [];
+                }
+                $_SESSION['carrito'][] = $id;
             }
-            $_SESSION['carrito'][] = $id;
+            // Si no hay stock, simplemente no se añade nada
         }
 
-        // Lo mandamos a la raiz que es donde están los productos
         header("Location: " . BASE_URL);
         exit;
     }
@@ -212,22 +228,102 @@ class ProductoController {
                 $errores[] = "El número de tarjeta debe tener 16 dígitos numéricos.";
             }
 
-            // gestionamos el resultado-
+            // Gestionamos el resultado
             if (empty($errores)) {
-                // Si todo está OK, enviamos el email 
-                $asunto = "Confirmación de pedido";
-                $mensaje = "Hola $nombre, tu pedido se ha procesado correctamente.";
-                $cabeceras = "From: tienda@informatica.com";
+                
+                // Inicio phpMailer-
+                $mail = new PHPMailer(true);
 
-                @mail($email, $asunto, $mensaje, $cabeceras);
+                try {
+                    // Configuración del servidor desde el .env
+                    $mail->isSMTP();
+                    $mail->Host       = $_ENV['SMTP_HOST'];
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = $_ENV['SMTP_USER'];
+                    $mail->Password   = $_ENV['SMTP_PASS']; 
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                    $mail->Port       = $_ENV['SMTP_PORT'];
 
-                // Vaciamos carrito y éxito
+                    // Destinatarios
+                    $mail->setFrom($_ENV['SMTP_USER'], 'Tienda Informatica');
+                    $mail->addAddress($email, $nombre);  
+
+                    // Contenido del correo
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Confirmacion de tu pedido';
+                    $mail->Body    = "
+                        <h1 style='color: #2c3e50;'>¡Gracias por tu compra, $nombre!</h1>
+                        <p>Tu pedido ha sido procesado correctamente y será enviado a: <b>$direccion</b></p>
+                        <p>Esperamos verte pronto de nuevo.</p>
+                    ";
+
+                    $mail->send();
+                } catch (Exception $e) {
+                    // Si falla el envío, no bloqueamos al usuario, pero podrías loguear el error
+                    // error_log("Error al enviar email: {$mail->ErrorInfo}");
+                }
+                // --- FIN ENVÍO REAL ---
+
+                // Vaciamos carrito y vamos a exito
                 unset($_SESSION['carrito']);
                 $this->pages->render('productos/exito');
+                
             } else {
                 // Si hay errores, volvemos al checkout pasándole los errores
                 $this->pages->render('productos/checkout', ['errores' => $errores]);
             }
         }
     }
+
+
+    public function crearCategoria() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
+            header("Location: " . BASE_URL);
+            exit;
+        }
+        
+        $this->pages->render('categorias/crear_categoria');
+    }
+
+    public function guardarCategoria() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nombre_nuevo = $_POST['nombre_categoria'];
+
+            // Consulta súper directa
+            $sql = "INSERT INTO categorias (nombre) VALUES (:nombre)";
+            
+            // Usamos la base de datos ($this->db) que ya tiene el repositorio
+            // Sin inventar funciones nuevas:
+            $this->repository->guardarCategoriaDirecta($nombre_nuevo);
+
+            header("Location: " . BASE_URL);
+            exit;
+        }
+    }
+
+    public function eliminarCategoria() {
+        
+        $id = $_POST['id'] ?? null;
+
+        if ($id) {
+            // Llamamos al repositorio para que la borre
+            $this->repository->borrarCategoria($id);
+        }
+
+        // Volvemos a la página principal
+        header("Location: " . BASE_URL);
+        exit;
+    }
+
+    // Función para mostrar el formulario con el select
+    public function confirmarBorrado() {
+        $categorias = $this->repository->obtenerCategorias(); // Usas la función que ya tienes
+        $this->pages->render('categorias/eliminar', ['categorias' => $categorias]);
+    }
+
+    
 }

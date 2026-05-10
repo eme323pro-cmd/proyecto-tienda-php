@@ -1,3 +1,11 @@
+/* Esto tiene que ir en la linea 1 de styles.css */
+.select-borrar {
+    display: block !important;
+    width: 100% !important;
+    padding: 10px !important;
+    border: 2px solid #e74c3c !important;
+}
+
 /* Configuración General */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -654,3 +662,4 @@ h1 {
 .btn-logout:hover {
     background-color: #c82333;
 }
+

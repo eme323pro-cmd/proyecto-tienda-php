@@ -21,8 +21,13 @@ class ProductoRepositorio {
      */
 
     //Listar los productos
+    //Listar los productos con el nombre de su categoría
     public function listarTodos(): array {
-        $sql = "SELECT * FROM productos ORDER BY id DESC";
+        // Usamos JOIN para juntar las dos tablas por el ID de categoría
+        $sql = "SELECT productos.*, categorias.nombre AS nombre_categoria 
+                FROM productos 
+                LEFT JOIN categorias ON productos.categoria_id = categorias.id 
+                ORDER BY productos.id DESC";
         
         $this->db->ejecutar($sql);
         
@@ -33,20 +38,22 @@ class ProductoRepositorio {
      * * @param string $nombre Nombre comercial del producto.
      * @param string $descripcion Detalle del producto.
      * @param float|string $precio Coste unitario del producto.
+     * @param int $categoria_id el id de la categoria
      * @return mixed Resultado de la ejecución de la consulta.
      */
 
     //Guardamos los productos en la base de datos
-    public function guardar($nombre, $descripcion, $precio) {
-        // Añadimos categoria_id a la consulta SQL
-        $sql = "INSERT INTO productos (nombre, descripcion, precio, categoria_id) 
-                VALUES (:nombre, :descripcion, :precio, :cat)";
+    public function guardar($nombre, $descripcion, $precio, $categoria_id, $stock) { 
+        
+        $sql = "INSERT INTO productos (nombre, descripcion, precio, categoria_id, stock) 
+                VALUES (:nombre, :descripcion, :precio, :cat, :stock)";
         
         $params = [
             ':nombre'      => ['valor' => $nombre],
             ':descripcion' => ['valor' => $descripcion],
             ':precio'      => ['valor' => $precio],
-            ':cat'         => ['valor' => 1] 
+            ':cat'         => ['valor' => $categoria_id],
+            ':stock'       => ['valor' => $stock] 
         ];
 
         return $this->db->ejecutar($sql, $params);
@@ -74,14 +81,18 @@ class ProductoRepositorio {
      */
 
     // Para cuando editamos un producto, se queden lso nuevos datos
-    public function actualizar($id, $nombre, $descripcion, $precio) {
-        $sql = "UPDATE productos SET nombre = :nombre, descripcion = :desc, precio = :precio WHERE id = :id";
+   public function actualizar($id, $nombre, $descripcion, $precio, $stock) {
+        // 1. Añadimos stock = :stock al SET
+        $sql = "UPDATE productos SET nombre = :nombre, descripcion = :desc, precio = :precio, stock = :stock WHERE id = :id";
+        
         $params = [
             ':nombre' => ['valor' => $nombre],
             ':desc'   => ['valor' => $descripcion],
             ':precio' => ['valor' => $precio],
+            ':stock'  => ['valor' => $stock], 
             ':id'     => ['valor' => $id]
         ];
+        
         return $this->db->ejecutar($sql, $params);
     }
 
@@ -115,5 +126,24 @@ class ProductoRepositorio {
         $this->db->ejecutar($sql);
         
         return $this->db->extraer_todos();
+    }
+
+    //Obtener todas las categorias para el formulario
+    public function obtenerCategorias() {
+        $sql = "SELECT id, nombre FROM categorias";
+        $this->db->ejecutar($sql);
+        return $this->db->extraer_todos();
+    }
+
+    // Función facilita para guardar la categoría
+    public function guardarCategoriaDirecta($nombre) {
+        $sql = "INSERT INTO categorias (nombre) VALUES (:nom)";
+        return $this->db->ejecutar($sql, [':nom' => ['valor' => $nombre]]);
+    }
+
+    // Función para poder borrar categorías
+    public function borrarCategoria($id) {
+        $sql = "DELETE FROM categorias WHERE id = :id";
+        return $this->db->ejecutar($sql, [':id' => ['valor' => $id]]);
     }
 }

@@ -99,7 +99,7 @@ class UsuarioController {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        session_destroy(); // Borra todo
+        session_destroy(); 
         header("Location: " . BASE_URL . "usuarios/login"); // A la pantalla de login
         exit;
     }
