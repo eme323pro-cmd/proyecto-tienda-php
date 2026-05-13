@@ -69,7 +69,7 @@
             <label for="id_cat">Selecciona la categoría a eliminar:</label>
             <select name="id" id="id_cat" class="select-borrar" required>
                 <?php foreach ($categorias as $cat): ?>
-                    <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nombre']) ?></option>
+                    <option value="<?= $cat->getId() ?>"><?= htmlspecialchars($cat->getNombre()) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

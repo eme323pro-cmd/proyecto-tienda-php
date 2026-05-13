@@ -6,18 +6,24 @@
 
 namespace Core;
 
+use Controllers\PagoController;
+use Controllers\PedidoController;
+use Controllers\CarritoController;
+use Controllers\CategoriaController;
 use Controllers\ProductoController;
 use Controllers\UsuarioController; 
 use Core\Router;
 
-// Ruta de inicio, muestra el catálogo principal de productos.
-Router::add('GET', '/', function() {
-    (new ProductoController())->index();
+// Rutas de los usuarios
+
+Router::add('GET', '/usuarios/crear', function() {
+    (new UsuarioController())->crear();
 });
 
+Router::add('POST', '/usuarios/crear', function() {
+    (new UsuarioController())->crear();
+});
 
- /* Gestión de Registro de Usuarios
- * Permite visualizar el formulario y procesar el alta de nuevos clientes.*/
 Router::add('GET', '/usuarios/registrar', function() {
     (new UsuarioController())->registrar();
 });
@@ -26,8 +32,6 @@ Router::add('POST', '/usuarios/registrar', function() {
     (new UsuarioController())->registrar();
 });
 
-/* Autenticación de Usuarios
- * Gestión del sistema de acceso login mediante formulario */
 Router::add('GET', '/usuarios/login', function() {
     (new UsuarioController())->login();
 });
@@ -36,8 +40,18 @@ Router::add('POST', '/usuarios/login', function() {
     (new UsuarioController())->login();
 });
 
-/* Gestión Administrativa de Productos
- * Rutas restringidas para la creación de nuevos artículos en el catálogo.*/
+Router::add('GET', '/usuarios/logout', function() {
+    (new UsuarioController())->logout();
+});
+
+// Rutas de inicio
+
+Router::add('GET', '/', function() {
+    (new ProductoController())->index();
+});
+
+// Gestión de productos
+
 Router::add('GET', '/productos/crear', function() {
     (new ProductoController())->crear();
 });
@@ -46,21 +60,10 @@ Router::add('POST', '/productos/crear', function() {
     (new ProductoController())->crear();
 });
 
-/* Finalización de Sesión
- * Elimina los datos de la sesión activa y redirige al usuario */
-Router::add('GET', '/usuarios/logout', function() {
-    (new UsuarioController())->logout();
-});
-
-/* Eliminación de Productos
- * Procesa la baja de un producto específico de la base de datos. */
 Router::add('GET', '/productos/eliminar', function() {
     (new ProductoController())->eliminar();
 });
 
-/** 
- * Edición de Productos
- * Permite modificar la información existente de los productos. */
 Router::add('GET', '/productos/editar', function() {
     (new ProductoController())->editar();
 });
@@ -69,47 +72,78 @@ Router::add('POST', '/productos/editar', function() {
     (new ProductoController())->editar();
 });
 
-/* Gestión del Carrito de la Compra
- * Funciones para añadir, quitar y visualizar los productos seleccionados en la sesión. */
-Router::add('GET', '/productos/anadirCarrito', function() {
-    (new ProductoController())->anadirCarrito();
+// Gestión de categorias
+
+Router::add('GET', '/categorias/crear', function() { 
+    (new CategoriaController())->crear(); 
 });
+
+Router::add('POST', '/categorias/guardar', function() { 
+    (new CategoriaController())->guardar(); 
+});
+
+Router::add('GET', '/categorias/confirmarBorrado', function() { 
+    (new CategoriaController())->confirmarBorrado(); 
+});
+
+Router::add('POST', '/categorias/eliminar', function() { 
+    (new CategoriaController())->eliminar(); 
+});
+
+// Carrito de la compra
 
 Router::add('GET', '/carrito', function() {
-    (new ProductoController())->verCarrito();
+    (new CarritoController())->index();
 });
 
-Router::add('GET', '/productos/quitarCarrito', function() {
-    (new ProductoController())->quitarCarrito();
+Router::add('GET', '/carrito/anadir', function() {
+    (new CarritoController())->anadir();
 });
 
-/* Proceso de Compra (Checkout)
- * Rutas para formalizar el pedido, capturar datos de envío y procesar el pago ficticio. */
-Router::add('GET', '/carrito/finalizar', function() {
-    (new ProductoController())->finalizarCompra();
+Router::add('GET', '/carrito/quitar', function() {
+    (new CarritoController())->quitar();
 });
 
-Router::add('GET', '/carrito/checkout', function() {
-    (new ProductoController())->checkout();
+Router::add('GET', '/carrito/vaciar', function() {
+    (new CarritoController())->vaciar();
 });
 
-Router::add('POST', '/carrito/procesar', function() {
-    (new ProductoController())->procesarPago();
+// Pedidos y pagos
+
+Router::add('GET', '/pedidos/confirmar', function() {
+    (new PedidoController())->confirmar();
 });
 
-/* Atención al Cliente
- * Sistema de contacto para que los usuarios envíen consultas al administrador. */
-Router::add('GET', '/contacto', function() {
-    (new UsuarioController())->contacto();
+Router::add('POST', '/pedidos/procesar', function() {
+    (new PedidoController())->procesar();
 });
 
-Router::add('POST', '/contacto', function() {
-    (new UsuarioController())->enviarMensaje();
+Router::add('GET', '/pedidos/exito', function() {
+    (new PedidoController())->exito();
 });
 
-/* Autenticación Externa (Google Auth)
- * Permite a los usuarios iniciar sesión con Google*/
-Router::add('GET', '/usuarios/login_google', function() {
+Router::add('GET', '/pedidos/mis_pedidos', function() {
+    (new PedidoController())->misPedidos();
+});
+
+// Bloqueo de acceso manual al procesar pedido
+Router::add('GET', '/pedidos/procesar', function() {
+    header("Location: " . BASE_URL);
+    exit;
+});
+
+// PayPal
+Router::add('POST', '/pago/crearOrden', function() {
+    (new PagoController())->crearOrden();
+});
+
+Router::add('POST', '/pago/capturarOrden', function() {
+    (new PagoController())->capturarOrden();
+});
+
+// Google
+
+Router::add('GET', '/usuarios/loginGoogle', function() {
     (new UsuarioController())->loginGoogle();
 });
 
@@ -117,29 +151,5 @@ Router::add('GET', '/usuarios/google_callback', function() {
     (new UsuarioController())->googleCallback();
 });
 
-/*Crear nuevas categorias*/
-Router::add('GET', '/productos/crearCategoria', function() {
-    (new ProductoController())->crearCategoria();
-});
-
-Router::add('POST', '/productos/guardarCategoria', function() {
-    (new ProductoController())->guardarCategoria();
-});
-
-//Que se puedan borrar categorías
-Router::add('GET', '/categorias/eliminar', function() {
-    (new ProductoController())->eliminarCategoria();
-});
-
-//Rutas para borrar categorias
-Router::add('GET', '/categorias/confirmarBorrado', function() {
-    (new ProductoController())->confirmarBorrado();
-});
-
-Router::add('POST', '/categorias/eliminar', function() {
-    (new ProductoController())->eliminarCategoria();
-});
-
-/* Ejecución del Router
- * Siempre al final del archivo */
+/* Ejecución del Router - SIEMPRE AL FINAL */
 Router::dispatch();

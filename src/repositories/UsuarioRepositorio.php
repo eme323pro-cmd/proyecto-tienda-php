@@ -6,6 +6,7 @@
 
 namespace Repositories;
 
+use Models\Usuario;
 use Core\BaseDatos;
 
 class UsuarioRepositorio {
@@ -15,55 +16,64 @@ class UsuarioRepositorio {
         $this->db = BaseDatos::getInstancia();
     }
 
-    /**
-     * 
-     * @param string $email Correo electrónico único del usuario.
-     * @param string $passwordHash Contraseña ya encriptada.
-     * @param string $nombre Nombre del usuario.
-     * @param string $apellidos Apellidos del usuario.
-     * @return bool True si la inserción fue exitosa, false en caso contrario.
-     */
-
     // Para cuando nos registremos crea un usuario
-    public function guardar(string $email, string $passwordHash, string $nombre, string $apellidos): bool {
-        $sql = "INSERT INTO usuarios (nombre, apellidos, email, password, rol, confirmado) 
-                VALUES (:nombre, :apellidos, :email, :password, :rol, :confirmado)";
+    public function registrar($email, $password, $nombre, $apellidos, $rol) {
+        // Ciframos contraseña
+        $password_segura = password_hash($password, PASSWORD_BCRYPT);
         
-        // El formato de la maestra para los parámetros es un poco especial:
-        $parametros = [
-            ':nombre'    => ['valor' => $nombre],
-            ':apellidos' => ['valor' => $apellidos],
-            ':email'     => ['valor' => $email],
-            ':password'  => ['valor' => $passwordHash],
-            ':rol'       => ['valor' => 'user'],
-            ':confirmado'=> ['valor' => 1]
-        ];
-
-        // Usamos SU función ejecutar
-        return $this->db->ejecutar($sql, $parametros);
+        $sql = "INSERT INTO usuarios (nombre, apellidos, email, password, rol) 
+                VALUES (:nom, :ape, :em, :pass, :rol)";
+                
+        return $this->db->ejecutar($sql, [
+            ':nom'  => ['valor' => $nombre],
+            ':ape'  => ['valor' => $apellidos],
+            ':em'   => ['valor' => $email],
+            ':pass' => ['valor' => $password_segura],
+            ':rol'  => ['valor' => $rol] 
+        ]);
     }
 
-    /**
-     * 
-     * @param string $email Correo electrónico a buscar.
-     * @return array|null Devuelve un array con los datos del usuario o null si no existe.
-     */
-
     // Para el logueo
-    public function buscarPorEmail(string $email) {
+    public function buscarPorEmail(string $email): ?Usuario {
         $sql = "SELECT * FROM usuarios WHERE email = :email";
+        $this->db->ejecutar($sql, [':email' => ['valor' => $email]]);
         
-        $parametros = [
-            ':email' => ['valor' => $email]
-        ];
+        $registro = $this->db->extraer_registro();
+        
+        if (!$registro) return null;
 
-        $this->db->ejecutar($sql, $parametros);
-        
-        $resultado = $this->db->extraer_registro();
-        
-        // Si no hay resultado, devolvemos null
-        if (!$resultado) return null;
+        // Convertimos el array de la DB en un objeto Modelo
+        $usuario = new Usuario();
+        $usuario->setId((int)$registro['id'])
+                ->setNombre($registro['nombre'])
+                ->setApellidos($registro['apellidos'])
+                ->setEmail($registro['email'])
+                ->setPassword($registro['password'])
+                ->setRol($registro['rol']);
 
-        return (array) $resultado;
+        return $usuario;
+    }
+
+    public function loginORegistroGoogle($email, $nombre) {
+        // Buscamos si ya existe
+        $this->db->ejecutar("SELECT * FROM usuarios WHERE email = :e", [':e' => ['valor' => $email]]);
+        $user = $this->db->extraer_registro();
+
+        // Si no existe, lo insertamos directamente
+        if (!$user) {
+            $this->db->ejecutar(
+                "INSERT INTO usuarios (nombre, email, password, rol) VALUES (:n, :e, :p, :r)",
+                [
+                    ':n' => ['valor' => $nombre],
+                    ':e' => ['valor' => $email],
+                    ':p' => ['valor' => 'google_auth'], // No necesita contraseña real
+                    ':r' => ['valor' => 'user']
+                ]
+            );
+            // Cogemos los datos del usuario que acabamos de crear
+            $this->db->ejecutar("SELECT * FROM usuarios WHERE email = :e", [':e' => ['valor' => $email]]);
+            $user = $this->db->extraer_registro();
+        }
+        return $user; // Devolvemos el usuario (ya sea el que existía o el nuevo)
     }
 }

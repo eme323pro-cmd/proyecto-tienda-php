@@ -1,20 +1,26 @@
-<!-- La página de login -->
+<style>
+    .error-txt {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: block;
+        margin-top: 5px;
+        text-align: center;
+    }
+</style>
+
 <main>
     <div class="formulario-auth tarjeta-producto">
         <h1>Iniciar Sesión</h1>
 
-        <?php if (isset($errores) && !empty($errores)): ?>
-            <ul class="lista-errores">
-                <?php foreach($errores as $e): ?>
-                    <li><?php echo $e; ?></li>
-                <?php endforeach; ?>
-            </ul>
+        <?php if (isset($errores['login'])): ?>
+            <span class="error-txt"><?= $errores['login'] ?></span>
         <?php endif; ?>
 
-        <form action="<?php echo BASE_URL; ?>usuarios/login" method="POST">
+        <form action="<?= BASE_URL ?>usuarios/login" method="POST">
             <div class="campo-grupo">
                 <label>Email</label>
-                <input type="email" name="email" required>
+                <input type="email" name="email" value="<?= $_POST['email'] ?? '' ?>" required>
             </div>
             
             <div class="campo-grupo">
@@ -26,19 +32,13 @@
         </form>
 
         <div class="texto-iniciarSesion">
-            <p>
-                ¿Aún no tienes cuenta? 
-                <a href="<?php echo BASE_URL; ?>usuarios/registrar">Crear cuenta</a>
-            </p>
+            <p>¿Aún no tienes cuenta? <a href="<?= BASE_URL ?>usuarios/registrar">Crear cuenta</a></p>
         </div>
         
         <hr>
-        <!-- Botón de Google -->
         <div class="login-social">
             <p>O inicia sesión con:</p>
-            <a href="<?= BASE_URL ?>usuarios/login_google" class="btn-google">
-                Iniciar sesión con Google
-            </a>
+            <a href="<?= BASE_URL ?>usuarios/loginGoogle" class="btn-google">Iniciar sesión con Google</a>
         </div>
     </div>
 </main>

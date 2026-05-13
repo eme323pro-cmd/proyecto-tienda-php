@@ -6,89 +6,95 @@
 
 namespace Controllers;
 
+use Exception;
+use Request\UsuarioRequest;
 use Core\Pages;
-use Repositories\UsuarioRepositorio;
+use Services\UsuarioService;
+use Models\Usuario;
+//Google
 use Google\Client as GoogleClient;
 use Google\Service\Oauth2 as GoogleServiceOauth2;
 
 class UsuarioController {
     private Pages $pages;
-    private UsuarioRepositorio $repository;
+    private UsuarioService $service;
 
     public function __construct() {
         $this->pages = new Pages();
-        $this->repository = new UsuarioRepositorio();
+        $this->service = new UsuarioService();
     }
 
     // Muestra el formulario y gestiona el registro
     public function registrar() {
         $errores = [];
 
-        // Solo actuamos si el usuario ha pulsado el botón (método POST)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // Recogemos y saneamos datos básicos
-            $nombre = trim($_POST['nombre']);
-            $apellidos = trim($_POST['apellidos']);
-            $email = trim($_POST['email']);
-            $password = $_POST['password'];
+            $request = new UsuarioRequest();
 
-            // Validamos el Email
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errores[] = "El email no tiene un formato correcto.";
-            }
-            
-            // Validamos la contraseña (8 caracteres y una mayúscula)
-            if (strlen($password) < 8) {
-                $errores[] = "La contraseña debe tener al menos 8 caracteres.";
-            }
-            if (!preg_match('/[A-Z]/', $password)) {
-                $errores[] = "La contraseña debe contener al menos una letra mayúscula.";
-            }
+            // Saneamos datos básicos
+            $nombre    = $request->sanearString($_POST['nombre'] ?? '');
+            $apellidos = $request->sanearString($_POST['apellidos'] ?? '');
+            $email     = $request->sanearEmail($_POST['email'] ?? '');
+            $password  = $_POST['password'] ?? '';
 
-            // Si no hay fallos, guardamos en la base de datos
+            // Por defecto, todo el mundo es 'user'
+            $rol = 'user';
+
+            // Si el que registra es admin y ha elegido un rol, lo usamos
+            if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin' && isset($_POST['rol'])) {
+                $rol = $_POST['rol'];
+            }
+            // ---------------------------
+
+            // Validaciones
+            if (!$request->validarNombre($nombre)) $errores['nombre'] = "El nombre no es válido.";
+            if (!$request->validarApellidos($apellidos)) $errores['apellidos'] = "Los apellidos no son válidos.";
+            if (!$request->validarEmail($email)) $errores['email'] = "El formato del email es incorrecto.";
+            if (!$request->validarPassword($password)) $errores['password'] = "Mínimo 8 caracteres y una mayúscula.";
+
             if (empty($errores)) {
-                // Encriptamos la contraseña
-                $passHash = password_hash($password, PASSWORD_BCRYPT);
+                $exito = $this->service->registrar($email, $password, $nombre, $apellidos, $rol);
                 
-                $guardado = $this->repository->guardar($email, $passHash, $nombre, $apellidos);
+                if ($exito) {
 
-                if ($guardado) {
-                    // Si todo va bien, vamos al login
                     header("Location: " . BASE_URL . "usuarios/login");
                     exit;
                 } else {
-                    $errores[] = "Error: El email ya está registrado o hubo un fallo en el servidor.";
+                    $errores['email'] = "Este email ya está en uso.";
                 }
             }
         }
-
-        // Cargamos la vista de registro (y le pasamos errores si los hay)
         $this->pages->render('usuarios/registro', ['errores' => $errores]);
     }
 
     public function login() {
         $errores = [];
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = trim($_POST['email']);
-            $password = $_POST['password'];
+            $request = new UsuarioRequest();
+            $email = $request->sanearEmail($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
 
-            $usuario = $this->repository->buscarPorEmail($email);
+            $usuario = $this->service->login($email);
 
-            if ($usuario && password_verify($password, $usuario['password'])) {
-                // Guardamos los datos en la sesión
+            if ($usuario && password_verify($password, $usuario->getPassword())) {
                 if (session_status() === PHP_SESSION_NONE) session_start();
-                
-                $_SESSION['id'] = $usuario['id'];
-                $_SESSION['nombre'] = $usuario['nombre'];
-                $_SESSION['rol'] = $usuario['rol'];
+                $_SESSION['id'] = $usuario->getId();
+                $_SESSION['nombre'] = $usuario->getNombre();
+                $_SESSION['email'] = $usuario->getEmail();
+                $_SESSION['rol'] = $usuario->getRol();
 
-                // Redireccionamos al inicio si se encuentra ese usuario en la base de datos
-                header("Location: " . BASE_URL); 
+                // Esa variable sirve para cuando no estmos logueados y añadimos al carrito que no se pierda
+                if (isset($_SESSION['redireccion_post_login'])) {
+                    $url = BASE_URL . $_SESSION['redireccion_post_login'];
+                    unset($_SESSION['redireccion_post_login']); // Limpiamos 
+                    header("Location: " . $url);
+                } else {
+                    header("Location: " . BASE_URL); 
+                }
                 exit; 
+
             } else {
-                $error = "Usuario o contraseña incorrectos";
+                $errores['login'] = "Email o contraseña incorrectos.";
             }
         }
         $this->pages->render('usuarios/login', ['errores' => $errores]);
@@ -100,39 +106,51 @@ class UsuarioController {
             session_start();
         }
         session_destroy(); 
-        header("Location: " . BASE_URL . "usuarios/login"); // A la pantalla de login
+        header("Location: " . BASE_URL ); // A la pantalla de productos
         exit;
-    }
-    // Para el contacto
-    public function contacto() {
-        $this->pages->render('contacto/contacto');
-}
+    }   
 
-    public function enviarMensaje() {
-        // Saneamos y validamos
-        $nombre = htmlspecialchars(trim($_POST['nombre'] ?? ''));
-        $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
-        $mensaje = htmlspecialchars(trim($_POST['mensaje'] ?? ''));
+    //Para crear un usuario siendo admin
+    public function crear() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Seguridad: Si no es admin, no puede estar aquí
+        if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
+            header("Location: " . BASE_URL);
+            exit;
+        }
 
         $errores = [];
 
-        if (empty($nombre) || empty($mensaje)) {
-            $errores[] = "Todos los campos son obligatorios.";
-        }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errores[] = "Correo electrónico no válido.";
-        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $request = new UsuarioRequest();
 
-        if (empty($errores)) {
-            // Enviamos el correo del cliente a nosotros
-            $asunto = "Nuevo mensaje de contacto de $nombre";
-            @mail("admin@tienda.com", $asunto, $mensaje, "From: $email");
+            $nombre    = $request->sanearString($_POST['nombre'] ?? '');
+            $apellidos = $request->sanearString($_POST['apellidos'] ?? '');
+            $email     = $request->sanearEmail($_POST['email'] ?? '');
+            $password  = $_POST['password'] ?? '';
+            $rol       = $_POST['rol'] ?? 'user'; // Recogemos el rol del select
 
-            // Mostramos éxito
-            $this->pages->render('contacto/exito_contacto');
-        } else {
-            $this->pages->render('contacto/contacto', ['errores' => $errores]);
+            // Validaciones 
+            if (!$request->validarNombre($nombre)) $errores['nombre'] = "Nombre no válido.";
+            if (!$request->validarApellidos($apellidos)) $errores['apellidos'] = "Apellidos no válidos.";
+            if (!$request->validarEmail($email)) $errores['email'] = "Email no válido.";
+            if (!$request->validarPassword($password)) $errores['password'] = "Mínimo 8 caracteres y una mayúscula.";
+
+            if (empty($errores)) {
+                $exito = $this->service->registrar($email, $password, $nombre, $apellidos, $rol);
+                if ($exito) {
+                    header("Location: " . BASE_URL); 
+                    exit;
+                } else {
+                    $errores['email'] = "El email ya existe.";
+                }
+            }
         }
+        // Renderizamos la vista
+        $this->pages->render('usuarios/crear', ['errores' => $errores]);
     }
 
     // Para poder iniciar sesión con Google
@@ -157,45 +175,44 @@ class UsuarioController {
         $client->setClientSecret(GOOGLE_CLIENT_SECRET);
         $client->setRedirectUri(GOOGLE_REDIRECT_URL);
 
-        // Verificamos si Google nos ha enviado el código de autorización
         if (isset($_GET['code'])) {
             try {
-                // Intercambiamos el código por un token de acceso
                 $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
                 
                 if(isset($token['error'])) {
-                    // Si hay un error en el token, mostramos el mensaje y paramos
                     die("Error de Google en el token: " . ($token['error_description'] ?? $token['error']));
                 }
 
                 $client->setAccessToken($token);
 
-                // Instanciamos el servicio para obtener la información del perfil
                 $googleService = new GoogleServiceOauth2($client);
                 $userinfo = $googleService->userinfo->get();
 
-                // Iniciamos sesión si no está iniciada
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
+  
+                // Usamos la función que busca o crea al usuario automáticamente
+                $usuario = $this->service->entrarConGoogle($userinfo->email, $userinfo->name);
 
-                // guardamos los datos
-                $_SESSION['id']     = $userinfo->id;     // ID único de Google
-                $_SESSION['nombre'] = $userinfo->name;   // Nombre completo
-                $_SESSION['email']  = $userinfo->email;  // Email del usuario
-                $_SESSION['rol']    = 'user';            // Rol por defecto
+                if ($usuario) {
+                    // Guardamos en la sesión los datos de la abse de datos
+                    $_SESSION['id']     = $usuario['id']; 
+                    $_SESSION['nombre'] = $usuario['nombre'];
+                    $_SESSION['email']  = $usuario['email'];
+                    $_SESSION['rol']    = $usuario['rol'];
 
-                // Redirigimos a la raíz de la tienda
-                header("Location: " . BASE_URL);
-                exit;
+                    header("Location: " . BASE_URL);
+                    exit;
+                } else {
+                    die("Error al procesar el usuario de Google en la base de datos.");
+                }
+                // --------------------------------------------
 
-            } catch (\Exception $e) {
-                // Si algo falla en la comunicación con la API de Google
+            } catch (Exception $e) {
                 die("Error crítico en el proceso de Google: " . $e->getMessage());
             }
         } else {
-            /* Si entramos aquí es porque no hay code en la URL.
-             * Esto pasa si el usuario cancela o si intentas entrar a esta URL a mano. */
             header("Location: " . BASE_URL . "usuarios/login");
             exit;
         }

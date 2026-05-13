@@ -8,13 +8,15 @@
             "Models\\": "src/models/",
             "Repositories\\": "src/repositories/",
             "Services\\": "src/services/",
-            "Requests\\": "src/request/"
+            "Request\\": "src/request/"
         }
     },
     "require": {
         "phpmailer/phpmailer": "^7.0",
         "vlucas/phpdotenv": "^5.6",
         "google/apiclient": "^2.19",
-        "dompdf/dompdf": "^3.1"
+        "dompdf/dompdf": "^3.1",
+        "guzzlehttp/guzzle": "^7.10",
+        "stefangabos/zebra_pagination": "^2.4"
     }
 }
